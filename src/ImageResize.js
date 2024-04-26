@@ -31,9 +31,6 @@ export default class ImageResize {
 			this.options.modules = moduleClasses;
 		}
 
-		// disable native image resizing on firefox
-		document.execCommand("enableObjectResizing", false, "false");
-
 		// respond to clicks inside the editor
 		this.quill.root.addEventListener("click", this.handleClick, false);
 
