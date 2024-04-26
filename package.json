@@ -4,7 +4,7 @@
 	"description": "A module for Quill rich text editor to allow images to be resized.",
 	"main": "image-resize.min.js",
 	"scripts": {
-		"build": "esbuild ./src/ImageResize.js --bundle --minify --loader:.svg=text --outfile=image-resize.min.js"
+		"build": "esbuild ./src/ImageResize.js --bundle --minify --loader:.svg=text --outfile=./dist/image-resize.min.js"
 	},
 	"repository": {
 		"type": "git",
