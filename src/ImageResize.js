@@ -114,10 +114,6 @@ export default class ImageResize {
 		// prevent spurious text selection
 		this.setUserSelect("none");
 
-		// listen for the image being deleted or moved
-		document.addEventListener("keyup", this.checkImage, true);
-		this.quill.root.addEventListener("input", this.checkImage, true);
-
 		// Create and add the overlay
 		this.overlay = document.createElement("div");
 		Object.assign(this.overlay.style, this.options.overlayStyles);
@@ -135,10 +131,6 @@ export default class ImageResize {
 		// Remove the overlay
 		this.quill.root.parentNode.removeChild(this.overlay);
 		this.overlay = undefined;
-
-		// stop listening for image deletion or movement
-		document.removeEventListener("keyup", this.checkImage);
-		this.quill.root.removeEventListener("input", this.checkImage);
 
 		// reset user-select
 		this.setUserSelect("");
@@ -181,15 +173,6 @@ export default class ImageResize {
 			this.quill.root.style[prop] = value;
 			document.documentElement.style[prop] = value;
 		});
-	};
-
-	checkImage = (evt) => {
-		if (this.img) {
-			if (evt.keyCode == 46 || evt.keyCode == 8) {
-				window.Quill.find(this.img).deleteAt(0);
-			}
-			this.hide();
-		}
 	};
 }
 
