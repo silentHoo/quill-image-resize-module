@@ -183,13 +183,72 @@ export default class ImageResize {
 		});
 	};
 
-	checkImage = (evt) => {
+	copyImageToClipboard = () => {
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+
+		canvas.width = this.img.naturalWidth;
+		canvas.height = this.img.naturalHeight;
+		ctx.drawImage(this.img, 0, 0);
+
+		return new Promise((resolve, reject) => {
+			canvas.toBlob(async function (blob) {
+				const item = new ClipboardItem({ [blob.type]: blob });
+				navigator.clipboard
+					.write([item])
+					.then(function () {
+						console.log(
+							"Image added to clipboard, type: " + blob.type
+						);
+						resolve(true);
+					})
+					.catch(function (err) {
+						alert(
+							"Error adding image to clipboard: " +
+								err.name +
+								" -> " +
+								err.message
+						);
+						reject();
+					});
+			});
+		});
+	};
+
+	checkImage = async (evt) => {
 		if (this.img) {
 			if (evt.keyCode == 46 || evt.keyCode == 8) {
-				window.Quill.find(this.img).deleteAt(0);
+				this.deleteImage(this.img);
+				this.hide();
 			}
-			this.hide();
+
+			// copy
+			if (
+				(evt.ctrlKey /* Win */ || evt.metaKey) /* Mac */ &&
+				evt.key === "c"
+			) {
+				evt.preventDefault();
+				this.copyImageToClipboard();
+			}
+
+			// cut
+			if (
+				(evt.ctrlKey /* Win */ || evt.metaKey) /* Mac */ &&
+				evt.key === "x"
+			) {
+				evt.preventDefault();
+				const imageCopied = await this.copyImageToClipboard();
+
+				if (imageCopied) {
+					this.deleteImage(this.img);
+					this.hide();
+				}
+			}
 		}
+	};
+
+	deleteImage = (img) => {
+		window.Quill.find(img).deleteAt(0);
 	};
 }
 
