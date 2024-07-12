@@ -31,9 +31,6 @@ export default class ImageResize {
 			this.options.modules = moduleClasses;
 		}
 
-		// set tabIndex to listen for keyup event
-		this.quill.root.setAttribute("tabIndex", 0);
-
 		this.quill.root.addEventListener(
 			"click",
 			this.handleClickInsideQuillInstance,
@@ -118,9 +115,6 @@ export default class ImageResize {
 		// prevent spurious text selection
 		this.setUserSelect("none");
 
-		// listen for the image being deleted or moved
-		this.quill.root.addEventListener("keyup", this.checkImage, true);
-		this.quill.root.addEventListener("input", this.checkImage, true);
 		window.addEventListener(
 			"click",
 			this.handleClickOutsideQuillInstance,
@@ -130,6 +124,13 @@ export default class ImageResize {
 		// Create and add the overlay
 		this.overlay = document.createElement("div");
 		Object.assign(this.overlay.style, this.options.overlayStyles);
+
+		// set tabIndex to listen for keyup event
+		this.quill.root.parentNode.setAttribute("tabIndex", 0);
+
+		// listen for the image being deleted or moved
+		this.quill.root.parentNode.addEventListener("keyup", this.checkImage);
+		this.quill.root.parentNode.focus();
 
 		this.quill.root.parentNode.appendChild(this.overlay);
 
@@ -143,11 +144,12 @@ export default class ImageResize {
 
 		// Remove the overlay
 		this.quill.root.parentNode.removeChild(this.overlay);
-		this.overlay = undefined;
-
 		// stop listening for image deletion or movement
-		this.quill.root.removeEventListener("keyup", this.checkImage);
-		this.quill.root.removeEventListener("input", this.checkImage);
+		this.quill.root.parentNode.removeEventListener(
+			"keyup",
+			this.checkImage
+		);
+		this.overlay = undefined;
 
 		// reset user-select
 		this.setUserSelect("");
@@ -206,9 +208,7 @@ export default class ImageResize {
 				navigator.clipboard
 					.write([item])
 					.then(function () {
-						console.log(
-							"Image added to clipboard, type: " + blob.type
-						);
+						// Image added to clipboard, type: " + blob.type
 						resolve(true);
 					})
 					.catch(function (err) {
