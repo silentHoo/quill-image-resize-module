@@ -9,7 +9,7 @@ const knownModules = { DisplaySize, Toolbar, Resize };
 /**
  * Custom module for quilljs to allow user to resize <img> elements
  * (Works on Chrome, Edge, Safari and replaces Firefox's native resize behavior)
- * @see https://quilljs.com/blog/building-a-custom-module/
+ * @see https://v1.quilljs.com/blog/building-a-custom-module/
  */
 export default class ImageResize {
 	constructor(quill, options = {}) {
@@ -31,8 +31,14 @@ export default class ImageResize {
 			this.options.modules = moduleClasses;
 		}
 
-		// respond to clicks inside the editor
-		this.quill.root.addEventListener("click", this.handleClick, false);
+		// set tabIndex to listen for keyup event
+		this.quill.root.setAttribute("tabIndex", 0);
+
+		this.quill.root.addEventListener(
+			"click",
+			this.handleClickInsideQuillInstance,
+			false
+		);
 
 		this.quill.root.parentNode.style.position =
 			this.quill.root.parentNode.style.position || "relative";
@@ -73,24 +79,22 @@ export default class ImageResize {
 		this.modules = [];
 	};
 
-	handleClick = (evt) => {
+	handleClickInsideQuillInstance = (evt) => {
+		this.hide();
+
 		if (
 			evt.target &&
 			evt.target.tagName &&
 			evt.target.tagName.toUpperCase() === "IMG"
 		) {
-			if (this.img === evt.target) {
-				// we are already focused on this image
-				return;
-			}
-			if (this.img) {
-				// we were just focused on another image
-				this.hide();
-			}
 			// clicked on an image inside the editor
 			this.show(evt.target);
-		} else if (this.img) {
-			// clicked on a non image
+		}
+	};
+
+	handleClickOutsideQuillInstance = (evt) => {
+		// if the click is outside the quill instance, hide
+		if (!this.quill.root.contains(evt.target)) {
 			this.hide();
 		}
 	};
@@ -115,8 +119,13 @@ export default class ImageResize {
 		this.setUserSelect("none");
 
 		// listen for the image being deleted or moved
-		document.addEventListener("keyup", this.checkImage, true);
+		this.quill.root.addEventListener("keyup", this.checkImage, true);
 		this.quill.root.addEventListener("input", this.checkImage, true);
+		window.addEventListener(
+			"click",
+			this.handleClickOutsideQuillInstance,
+			true
+		);
 
 		// Create and add the overlay
 		this.overlay = document.createElement("div");
@@ -137,7 +146,7 @@ export default class ImageResize {
 		this.overlay = undefined;
 
 		// stop listening for image deletion or movement
-		document.removeEventListener("keyup", this.checkImage);
+		this.quill.root.removeEventListener("keyup", this.checkImage);
 		this.quill.root.removeEventListener("input", this.checkImage);
 
 		// reset user-select
